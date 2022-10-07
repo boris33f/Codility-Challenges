@@ -1,0 +1,128 @@
+using System.Linq;
+using System;
+using System.Collections.Generic;
+// you can also use other imports, for example:
+// using System.Collections.Generic;
+
+// you can write to stdout for debugging purposes, e.g.
+// Console.WriteLine("this is a debug message");
+
+class Solution 
+{
+    List<Connection> connections = new List<Connection>();
+
+    public int solution(int[] A, int[] B) 
+    {
+        int nodeToSearch;
+
+        int[][] orderedConnections = new int[A.Length + 1][];
+
+        for (int i = 0; i < orderedConnections.Length; i++)
+        {
+            nodeToSearch = i;
+            orderedConnections[nodeToSearch] = new int[0];
+
+            for (int i2 = 0; i2 < A.Length; i2++)
+            {
+                if (A[i2] == nodeToSearch) orderedConnections = Add(orderedConnections, nodeToSearch, B[i2]);
+                else if (B[i2] == nodeToSearch) orderedConnections = Add(orderedConnections, nodeToSearch, A[i2]);
+            }
+        }
+
+        // Now I have every connection ordered in a jagged array
+
+        for (int i = 0; i < orderedConnections.Length; i++)
+        {
+            List<int> checkedNodes = new List<int>();
+            List<int> currentNodes = new List<int>();
+            List<int> nextNodes = new List<int>();
+            
+            int linksAmount = 1;
+
+            for (int i2 = 0; i2 < orderedConnections[i].Length; i2++)
+            {
+                if (!checkedNodes.Contains(orderedConnections[i][i2])) 
+                {
+                    nextNodes.Add(orderedConnections[i][i2]);
+                }
+
+                connections.Add(new Connection(i, orderedConnections[i][i2], linksAmount));
+            }
+            checkedNodes.Add(i);
+
+            while (nextNodes.Count > 0)
+            {
+                linksAmount++;
+                currentNodes = new List<int>(nextNodes);
+                nextNodes.Clear();
+                
+                foreach (int node in currentNodes)
+                {
+                    for (int i2 = 0; i2 < orderedConnections[node].Length; i2++)
+                    {
+                        if (!checkedNodes.Contains(orderedConnections[node][i2])) 
+                        {
+                            nextNodes.Add(orderedConnections[node][i2]);
+                        }
+
+                        if (!checkedNodes.Contains(orderedConnections[node][i2]) && !(linksAmount%2 == 0))
+                        {
+                            connections.Add(new Connection(i, orderedConnections[node][i2], linksAmount));
+                        }
+                    }
+                    
+                    checkedNodes.Add(node);
+                }
+            }
+        }
+
+        return connections.Distinct().ToList().Count /2;
+    }
+
+    public int[][] Add(int[][] _array, int _fIndex, int _newValue)
+    {
+        int[] tempArray = new int[_array[_fIndex].Length + 1];
+
+        for (int i = 0; i < tempArray.Length - 1; i++)
+        {
+            tempArray[i] = _array[_fIndex][i];
+        }
+        tempArray[tempArray.Length - 1] = _newValue;
+        _array[_fIndex] = tempArray;
+        return _array;
+    }
+}
+
+public class Connection
+{
+    public Connection(int first, int last, int links)
+    {
+        if (first < last)
+        {
+            startNode = first;
+            endNode = last;
+        }
+        else 
+        {
+            startNode = last;
+            endNode = first;
+        }
+        amountOfLinks = links;
+    }
+
+    public int startNode;
+    public int endNode;
+    public int amountOfLinks;
+}
+
+public class Link
+{
+    public Link(int A, int B)
+    {
+        nodeA = A;
+        nodeB = B;
+    }
+
+    public int nodeA;
+    public int nodeB;
+}
